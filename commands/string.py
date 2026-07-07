@@ -3,7 +3,6 @@ def set_command(db, args):
     value = args[1]
 
     db.set(key, value)
-
     return "OK"
 
 def get_command(db, args):
@@ -30,3 +29,23 @@ def flush_command(db, args):
     db.flush()
 
     return "OK"
+
+def exists_command(db, args):
+    return db.exists(args[0])
+
+def incr_command(db, args):
+    if len(args) != 1:
+        return "ERR - wrong number of args"
+    return db.incr(args[0])
+
+def decr_command(db, args):
+    if len(args) != 1:
+        return "ERR - wrong number of args"
+    return db.decr(args[0])
+
+def append_command(db, args):
+    key = args[0]
+    message = args[1]
+
+    return db.append(key, message)
+
