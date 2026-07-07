@@ -11,7 +11,7 @@ class Database:
 
     def delete(self, key):
         if key in self.data:
-            del self.data.get(key)
+            del self.data[key]
             return True
 
         return False
