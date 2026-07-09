@@ -67,59 +67,95 @@ class Database:
     
     # HASH COMMANDS
     def hset(self, key, field, value):
-        if key not in self.data:
+        if key in self.data:
+            if not isinstance(self.data[key], dict):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
             self.data[key] = {}
+        
+        is_new = field not in self.data[key]
         self.data[key][field] = value
+        return f"(integer) {1 if is_new else 0}"
 
     def hget(self, key, field):
         if key not in self.data:
             return None
+        if not isinstance(self.data[key], dict):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         return self.data[key].get(field)
     
     def hgetall(self, key):
         if key not in self.data:
             return None
+        if not isinstance(self.data[key], dict):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         return self.data[key]
     
     def hdel(self, key, fields):
         if key not in self.data:
             return "(integer) 0"
+        if not isinstance(self.data[key], dict):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
+        deleted_count = 0
         for field in fields:
-            self.data[key].pop(field)
-            
+            if field in self.data[key]:
+                self.data[key].pop(field)
+                deleted_count += 1
     
-        return "(integer) " + str(len(fields))
+        return f"(integer) {deleted_count}"
     
     def hincrby(self, key, field, incr):
         try:
-            int(incr)
+            incr_val = int(incr)
         except ValueError:
-            return "ERR - VALUE NOT IN RANGE"
+            return "ERR - value is not an integer or out of range"
         
-        value = self.data.get(key, 0)
+        if key in self.data:
+            if not isinstance(self.data[key], dict):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
+            self.data[key] = {}
         
-        value += incr
-
-        self.data[key] = str(value)
-
-        return value
+        current_val_str = self.data[key].get(field, "0")
+        try:
+            current_val = int(current_val_str)
+        except ValueError:
+            return "ERR - hash value is not an integer"
+        
+        new_val = current_val + incr_val
+        self.data[key][field] = str(new_val)
+        return new_val
     
     def hdecrby(self, key, field, decr):
         try:
-            int(decr)
+            decr_val = int(decr)
         except ValueError:
-            return "ERR - VALUE NOT IN RANGE"
+            return "ERR - value is not an integer or out of range"
         
-        value = self.data.get(key, 0)
-
-        value -= decr
-
-        self.data[key] = str(value)
-
-        return value
+        if key in self.data:
+            if not isinstance(self.data[key], dict):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
+            self.data[key] = {}
+        
+        current_val_str = self.data[key].get(field, "0")
+        try:
+            current_val = int(current_val_str)
+        except ValueError:
+            return "ERR - hash value is not an integer"
+        
+        new_val = current_val - decr_val
+        self.data[key][field] = str(new_val)
+        return new_val
     
     def hexists(self, key, field):
-        if self.data[key].get(field):
-            return "(integer 1)"
-        return "(integer 0)"
+        if key not in self.data:
+            return "(integer) 0"
+        if not isinstance(self.data[key], dict):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        
+        if field in self.data[key]:
+            return "(integer) 1"
+        return "(integer) 0"
+    
