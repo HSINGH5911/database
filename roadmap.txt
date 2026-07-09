@@ -1,0 +1,38 @@
+Redis-Like Database Project Roadmap
+
+1. Core Database Engine
+- [x] Basic in-memory key-value store database (`core/database.py`)
+- [x] Command registration and execution registry (`commands/registry.py`)
+- [x] Basic String commands: `SET`, `GET`, `DEL`, `PING`, `FLUSH` (`commands/string.py`)
+- [x] Advanced String commands: `EXISTS`, `INCR`, `DECR`, `APPEND` (`commands/string.py`)
+- [ ] Hash commands (Placeholder in `commands/hashes.py`)
+- [ ] List commands (Placeholder in `commands/lists.py`)
+- [ ] Set commands (Placeholder in `commands/sets.py`)
+- [ ] Sorted Set commands (Placeholder in `commands/sorted_sets.py`)
+- [ ] Pub/Sub commands (Placeholder in `commands/pubsub.py`)
+- [ ] Administrative commands (Placeholder in `commands/admin.py`)
+
+2. Network Protocol & Serialization (RESP-like)
+- [x] Basic line-based command parser (`protocol/parser.py`)
+- [x] RESP serialization formats: Simple Strings, Integers, Bulk Strings, Errors (`protocol/serializer.py`)
+- [x] Protocol wrapper interface (`protocol/protocol.py`)
+- [ ] Fully compliant RESP parsing (handling nested arrays, multi-line bulk strings correctly)
+
+3. Networking & Client-Server Architecture
+- [x] TCP Socket Server for command handling (`networking/socket_server.py`)
+- [x] Interactive CLI client terminal (`client.py`)
+- [x] Basic single-command client script (`networking/socket_client.py`)
+- [x] Interactive offline REPL CLI (`server.py`)
+- [ ] Connection manager and connection state pooling (`core/connection.py`)
+- [ ] Multi-threaded/Asynchronous connection handling (non-blocking socket support)
+
+4. Persistence & Storage Engine
+- [ ] Append-Only File (AOF) logging for write-ahead durability (Placeholder in `persistence/aof.py`)
+- [ ] RDB snapshotting for database state backups (Placeholder in `persistence/snapshot.py`)
+- [ ] Startup data loading & reconstruction (Placeholder in `persistence/loader.py`)
+- [ ] Custom memory storage backend block/page allocation (Placeholder in `core/storage.py`)
+
+5. Testing, Utilities, & Error Handling
+- [ ] Robust error handling definitions (`core/errors.py`)
+- [ ] Comprehensive unit & integration tests (`tests/` directory)
+- [ ] Helper utilities & logging functions (`utils/` directory)
