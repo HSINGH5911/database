@@ -1,6 +1,8 @@
 from commands.string import *
+from commands.hashes import *
 
 COMMANDS = {
+    # STRING COMMANDS
     "SET": set_command,
     "GET": get_command,
     "DEL": del_command,
@@ -10,6 +12,15 @@ COMMANDS = {
     "INCR": incr_command,
     "DECR": decr_command,
     "APPEND": append_command,
+
+    # HASH COMMANDS
+    "HSET": hset_command,
+    "HGET": hget_command,
+    "HGETALL": hgetall_command,
+    "HDEL": hdel_command,
+    "HINCRBY": hincrby_command,
+    "HDECRBY": hdecrby_command,
+    "HEXISTS": hexists_command,
 }
 
 def execute(command, db, args):
