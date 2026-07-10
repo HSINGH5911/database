@@ -1,5 +1,6 @@
 from commands.string import *
 from commands.hashes import *
+from commands.lists import *
 
 COMMANDS = {
     # STRING COMMANDS
@@ -21,6 +22,14 @@ COMMANDS = {
     "HINCRBY": hincrby_command,
     "HDECRBY": hdecrby_command,
     "HEXISTS": hexists_command,
+
+    # LIST COMMANDS
+    "LPUSH": lpush_command,
+    "RPUSH": rpush_command,
+    "LPOP": lpop_command,
+    "RPOP": rpop_command,
+    "LREM": lrem_command,
+    
 }
 
 def execute(command, db, args):

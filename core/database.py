@@ -159,3 +159,74 @@ class Database:
             return "(integer) 1"
         return "(integer) 0"
     
+    # LIST COMMANDS
+    def lpush(self, key, value):
+        if key not in self.data:
+            self.data[key] = []
+
+        self.data[key].insert(0, value)
+
+        return len(self.data[key])
+    
+    def rpush(self, key, value):
+        if key not in self.data:
+            self.data[key] = []
+
+        self.data[key].append(value)
+
+        return len(self.data[key])
+
+    def lpop(self, key, amount):
+        if len(self.data) < amount:
+            return "ERR - Not Enough Values In Data To Pop"
+        
+        removed = []
+
+        for i in range(amount):
+            removed.append(self.data[key].pop(0))
+
+        return removed
+    
+    def rpop(self, key, amount):
+        if len(self.data) < amount:
+            return "ERR - Not Enough Values In Data To Pop"
+        
+        removed = []
+
+        for i in range(amount):
+            removed.append(self.data[key].pop())
+        
+        return removed
+    
+    def lrem(self, key, count, value):
+        removed = 0
+        
+        if count > 0:
+            for i in range(count):
+                if self.data[key].get(i) == value:
+                    removed += 1
+                    self.data[key].pop(i)
+                    i -= 1
+            
+            return removed
+        
+        if count < 0:
+            for i in range((len(self.data[key]), count, -1)):
+                if self.data[key].get(i) == value:
+                    removed += 1
+                    self.data[key].pop(i)
+                    i -= 1
+
+            return removed
+
+        for i in range(len(self.data[key].items())):
+            if self.data[key].get(i) == value:
+                removed += 1
+                self.data[key].pop(i)
+                i -= 1
+        
+        return removed
+    
+    
+
+
