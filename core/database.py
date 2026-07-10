@@ -227,6 +227,70 @@ class Database:
         
         return removed
     
+    def lrim(self, key, start, stop):
+        if key not in self.data:
+            return "ERR - Key Does Not Exist"
+        
+        new_data = {}
+
+        for i in range(start, stop):
+            new_data[i] = self.data[key].get(i)
+        
+        self.data[key] = new_data
+
+    def lrange(self, key, start, stop):
+        if key not in self.data:
+            return []
+
+        show = self.data[key]
+
+        return show[start:stop + 1]
     
+    def lindex(self, key, index):
+        if key not in self.data:
+            return -1
+        
+        return self.data[key].get(index)
+    
+    def llen(self, key):
+        if key not in self.data:
+            return -1
+        
+        return len(self.data[key])
+    
+    def rpoplpush(self, source, destination):
+        if source not in self.data:
+            return "nil"
+        if destination not in self.data:
+            return "nil"
+        
+        move = self.rpop(source, 1)
+        self.lpush(destination, move)
 
+        return move
+    
+    def lmove(self, source, destination, lr1, lr2):
+        if source not in self.data:
+            return "nil"
+        if destination not in self.data:
+            return "nil"
+        if not lr1 == "RIGHT" or lr1 == "LEFT":
+            return "ERR - Specify 'Right' or 'Left'"
+        if not lr2 == "RIGHT" or lr2 == "LEFT":
+            return "ERR - Specify 'Right' or 'Left'"
+        
+        move = None
 
+        if lr1 == "RIGHT":
+            move = self.rpop(source, 1)
+        if lr1 == "LEFT":
+            move = self.lpop(source, 1)
+
+        if lr2 == "RIGHT":
+            self.rpush(destination, move)
+        if lr2 == "LEFT":
+            self.lpush(destination, move)
+
+        return move
+
+        
