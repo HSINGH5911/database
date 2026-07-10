@@ -30,6 +30,7 @@ COMMANDS = {
     "RPOP": rpop_command,
     "LREM": lrem_command,
     "LRIM": lrim_command,
+    "LTRIM": ltrim_command,
     "LRANGE": lrange_command,
     "LINDEX": lindex_command,
     "LLEN": llen_command,

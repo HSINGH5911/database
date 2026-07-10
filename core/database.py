@@ -158,139 +158,254 @@ class Database:
         if field in self.data[key]:
             return "(integer) 1"
         return "(integer) 0"
-    
     # LIST COMMANDS
-    def lpush(self, key, value):
-        if key not in self.data:
+    def lpush(self, key, *values):
+        if key in self.data:
+            if not isinstance(self.data[key], list):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
             self.data[key] = []
-
-        self.data[key].insert(0, value)
-
+        
+        for val in values:
+            self.data[key].insert(0, val)
         return len(self.data[key])
     
-    def rpush(self, key, value):
-        if key not in self.data:
+    def rpush(self, key, *values):
+        if key in self.data:
+            if not isinstance(self.data[key], list):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
             self.data[key] = []
-
-        self.data[key].append(value)
-
+        
+        for val in values:
+            self.data[key].append(val)
         return len(self.data[key])
 
-    def lpop(self, key, amount):
-        if len(self.data) < amount:
-            return "ERR - Not Enough Values In Data To Pop"
+    def lpop(self, key, count=None):
+        if key not in self.data:
+            return None
+        if not isinstance(self.data[key], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
-        removed = []
-
-        for i in range(amount):
-            removed.append(self.data[key].pop(0))
-
-        return removed
+        if not self.data[key]:
+            return None
+        
+        if count is None:
+            return self.data[key].pop(0)
+        
+        try:
+            cnt = int(count)
+        except ValueError:
+            return "ERR - value is not an integer or out of range"
+            
+        if cnt < 0:
+            return "ERR - value is not an integer or out of range"
+            
+        popped = []
+        for _ in range(min(cnt, len(self.data[key]))):
+            popped.append(self.data[key].pop(0))
+        return popped
     
-    def rpop(self, key, amount):
-        if len(self.data) < amount:
-            return "ERR - Not Enough Values In Data To Pop"
+    def rpop(self, key, count=None):
+        if key not in self.data:
+            return None
+        if not isinstance(self.data[key], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
-        removed = []
-
-        for i in range(amount):
-            removed.append(self.data[key].pop())
+        if not self.data[key]:
+            return None
         
-        return removed
+        if count is None:
+            return self.data[key].pop()
+        
+        try:
+            cnt = int(count)
+        except ValueError:
+            return "ERR - value is not an integer or out of range"
+            
+        if cnt < 0:
+            return "ERR - value is not an integer or out of range"
+            
+        popped = []
+        for _ in range(min(cnt, len(self.data[key]))):
+            popped.append(self.data[key].pop())
+        return popped
     
     def lrem(self, key, count, value):
+        if key not in self.data:
+            return 0
+        if not isinstance(self.data[key], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        
+        try:
+            cnt = int(count)
+        except ValueError:
+            return "ERR - value is not an integer or out of range"
+            
+        lst = self.data[key]
         removed = 0
         
-        if count > 0:
-            for i in range(count):
-                if self.data[key].get(i) == value:
+        if cnt > 0:
+            i = 0
+            while i < len(lst) and removed < cnt:
+                if lst[i] == value:
+                    lst.pop(i)
                     removed += 1
-                    self.data[key].pop(i)
-                    i -= 1
-            
-            return removed
-        
-        if count < 0:
-            for i in range((len(self.data[key]), count, -1)):
-                if self.data[key].get(i) == value:
+                else:
+                    i += 1
+        elif cnt < 0:
+            limit = abs(cnt)
+            i = len(lst) - 1
+            while i >= 0 and removed < limit:
+                if lst[i] == value:
+                    lst.pop(i)
                     removed += 1
-                    self.data[key].pop(i)
-                    i -= 1
-
-            return removed
-
-        for i in range(len(self.data[key].items())):
-            if self.data[key].get(i) == value:
-                removed += 1
-                self.data[key].pop(i)
                 i -= 1
+        else:
+            i = 0
+            while i < len(lst):
+                if lst[i] == value:
+                    lst.pop(i)
+                    removed += 1
+                else:
+                    i += 1
         
         return removed
     
-    def lrim(self, key, start, stop):
+    def ltrim(self, key, start, stop):
         if key not in self.data:
-            return "ERR - Key Does Not Exist"
+            return "OK"
+        if not isinstance(self.data[key], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
-        new_data = {}
-
-        for i in range(start, stop):
-            new_data[i] = self.data[key].get(i)
+        try:
+            start_idx = int(start)
+            stop_idx = int(stop)
+        except ValueError:
+            return "ERR - value is not an integer or out of range"
+            
+        lst = self.data[key]
+        n = len(lst)
         
-        self.data[key] = new_data
+        if start_idx < 0:
+            start_idx = max(0, n + start_idx)
+        if stop_idx < 0:
+            stop_idx = n + stop_idx
+            
+        if start_idx >= n or start_idx > stop_idx:
+            self.data[key] = []
+        else:
+            stop_idx = min(stop_idx, n - 1)
+            self.data[key] = lst[start_idx:stop_idx + 1]
+            
+        return "OK"
 
     def lrange(self, key, start, stop):
         if key not in self.data:
+            return None
+        if not isinstance(self.data[key], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+            
+        try:
+            start_idx = int(start)
+            stop_idx = int(stop)
+        except ValueError:
+            return "ERR - value is not an integer or out of range"
+            
+        lst = self.data[key]
+        n = len(lst)
+        
+        if start_idx < 0:
+            start_idx = max(0, n + start_idx)
+        if stop_idx < 0:
+            stop_idx = n + stop_idx
+            
+        if start_idx >= n or start_idx > stop_idx:
             return []
-
-        show = self.data[key]
-
-        return show[start:stop + 1]
+            
+        stop_idx = min(stop_idx, n - 1)
+        return lst[start_idx:stop_idx + 1]
     
     def lindex(self, key, index):
         if key not in self.data:
-            return -1
+            return None
+        if not isinstance(self.data[key], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+            
+        try:
+            idx = int(index)
+        except ValueError:
+            return "ERR - value is not an integer or out of range"
+            
+        lst = self.data[key]
+        n = len(lst)
         
-        return self.data[key].get(index)
+        if idx < 0:
+            idx = n + idx
+            
+        if idx < 0 or idx >= n:
+            return None
+            
+        return lst[idx]
     
     def llen(self, key):
         if key not in self.data:
-            return -1
+            return 0
+        if not isinstance(self.data[key], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
         return len(self.data[key])
     
     def rpoplpush(self, source, destination):
         if source not in self.data:
-            return "nil"
-        if destination not in self.data:
-            return "nil"
-        
-        move = self.rpop(source, 1)
-        self.lpush(destination, move)
-
-        return move
+            return None
+        if not isinstance(self.data[source], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+            
+        if destination in self.data:
+            if not isinstance(self.data[destination], list):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
+            self.data[destination] = []
+            
+        if not self.data[source]:
+            return None
+            
+        val = self.data[source].pop()
+        self.data[destination].insert(0, val)
+        return val
     
-    def lmove(self, source, destination, lr1, lr2):
+    def lmove(self, source, destination, wherefrom, whereto):
         if source not in self.data:
-            return "nil"
-        if destination not in self.data:
-            return "nil"
-        if not lr1 == "RIGHT" or lr1 == "LEFT":
-            return "ERR - Specify 'Right' or 'Left'"
-        if not lr2 == "RIGHT" or lr2 == "LEFT":
-            return "ERR - Specify 'Right' or 'Left'"
+            return None
+        if not isinstance(self.data[source], list):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+            
+        if destination in self.data:
+            if not isinstance(self.data[destination], list):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
+            self.data[destination] = []
+            
+        wf = wherefrom.upper()
+        wt = whereto.upper()
         
-        move = None
-
-        if lr1 == "RIGHT":
-            move = self.rpop(source, 1)
-        if lr1 == "LEFT":
-            move = self.lpop(source, 1)
-
-        if lr2 == "RIGHT":
-            self.rpush(destination, move)
-        if lr2 == "LEFT":
-            self.lpush(destination, move)
-
-        return move
+        if wf not in ("LEFT", "RIGHT") or wt not in ("LEFT", "RIGHT"):
+            return "ERR - syntax error"
+            
+        if not self.data[source]:
+            return None
+            
+        if wf == "LEFT":
+            val = self.data[source].pop(0)
+        else:
+            val = self.data[source].pop()
+            
+        if wt == "LEFT":
+            self.data[destination].insert(0, val)
+        else:
+            self.data[destination].append(val)
+            
+        return val
 
         
