@@ -6,7 +6,7 @@ Redis-Like Database Project Roadmap
 - [x] Basic String commands: `SET`, `GET`, `DEL`, `PING`, `FLUSH` (`commands/string.py`)
 - [x] Advanced String commands: `EXISTS`, `INCR`, `DECR`, `APPEND` (`commands/string.py`)
 - [x] Hash commands (Placeholder in `commands/hashes.py`)
-- [ ] List commands (Placeholder in `commands/lists.py`)
+- [x] List commands (Placeholder in `commands/lists.py`)
 - [ ] Set commands (Placeholder in `commands/sets.py`)
 - [ ] Sorted Set commands (Placeholder in `commands/sorted_sets.py`)
 - [ ] Pub/Sub commands (Placeholder in `commands/pubsub.py`)

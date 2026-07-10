@@ -1,9 +1,13 @@
+import random
+
 class Database:
 
     def __init__(self):
         self.data = {}
 
-    # STRING COMMANDS 
+    """
+    STRING COMMANDS
+    """
     def set(self, key, value):
         self.data[key] = value
     
@@ -65,7 +69,9 @@ class Database:
 
         return "(integer) " + str(len(value))   
     
-    # HASH COMMANDS
+    """
+    HASH COMMANDS
+    """
     def hset(self, key, field, value):
         if key in self.data:
             if not isinstance(self.data[key], dict):
@@ -158,7 +164,10 @@ class Database:
         if field in self.data[key]:
             return "(integer) 1"
         return "(integer) 0"
-    # LIST COMMANDS
+    
+    """
+    LIST COMMANDS
+    """
     def lpush(self, key, *values):
         if key in self.data:
             if not isinstance(self.data[key], list):
@@ -408,4 +417,36 @@ class Database:
             
         return val
 
+    """
+    SET COMMANDS
+    """
+    def sadd(self, key, *members):
+        if key not in self.data:
+            self.data[key] = set()
         
+        for member in members:
+            self.data[key].add(member)
+
+        return str(len(members))
+    
+    def srem(self, key, *members):
+        if key not in self.data:
+            return -1
+        
+        for member in members:
+            self.data[key].remove(member)
+
+        return str(len(members))
+    
+           
+    def spop(self, key, count=1):
+        if key not in self.data:
+            return "ERR - Key not in data"
+        
+        removed = set()
+
+        for i in range(count):
+            rem = self.data[key].pop(random.choice(self.data[key]))
+            removed.add(rem)
+
+        return rem

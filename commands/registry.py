@@ -1,6 +1,7 @@
 from commands.string import *
 from commands.hashes import *
 from commands.lists import *
+from commands.sets import *
 
 COMMANDS = {
     # STRING COMMANDS
@@ -37,7 +38,12 @@ COMMANDS = {
     "RPOPLPUSH": rpoplpush_command,
     "LMOVE": lmove_command,
 
+    # SET COMMANDS
+    "SADD": sadd_command,
+    "SREM": srem_command,
+    "SPOP": spop_command,
     
+
 }
 
 def execute(command, db, args):
