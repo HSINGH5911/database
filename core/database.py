@@ -465,7 +465,7 @@ class Database:
         
         return self.data[key]
     
-    
+
     def spop(self, key, count=1):
         if key not in self.data:
             return "ERR - Key not in data"
@@ -477,3 +477,25 @@ class Database:
             removed.add(rem)
 
         return rem
+
+    def srandommember(self, key, count=1):
+        if key not in self.data:
+            return "ERR - Key not in data"
+        
+        members = set()
+
+        for i in range(count):
+            mem = self.data[key].get(random.choice)
+            members.add(mem)
+        
+        return members
+    
+    def smove(self, origin, destination, item):
+        if origin not in self.data or destination not in self.data:
+            return "(integer) 0"
+        
+        self.data[destination].add(self.data[origin].get(item))
+        return "(integer) 1" 
+
+        
+

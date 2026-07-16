@@ -46,8 +46,9 @@ COMMANDS = {
     "SCARD": scard_command,
     "SMEMBERS": smembers_command,
     "SPOP": spop_command,
+    "SRANDOMMEMBER": srandommember_command,
+    "SMOVE": smove_command,
     
-
 }
 
 def execute(command, db, args):
