@@ -437,8 +437,35 @@ class Database:
             self.data[key].remove(member)
 
         return str(len(members))
+
+    def sismember(self, key, member):
+        if key not in self.data:
+            return 0
+
+        if self.data[key].contains(member):
+            return 1
+        
+        return 0
     
-           
+    def smismember(self, key, members):
+        for member in members:
+            if self.sismember(key, member) == 0:
+                return 0
+        
+        return 1  
+
+    def scard(self, key):
+        if key not in self.data:
+            return -1
+        return len(self.data[key])
+    
+    def smembers(self, key):
+        if key not in self.data:
+            return "ERR - Key does not exist"
+        
+        return self.data[key]
+    
+    
     def spop(self, key, count=1):
         if key not in self.data:
             return "ERR - Key not in data"

@@ -41,6 +41,10 @@ COMMANDS = {
     # SET COMMANDS
     "SADD": sadd_command,
     "SREM": srem_command,
+    "SISMEMBER": sismember_command,
+    "SMISMEMBER": smismember_command,
+    "SCARD": scard_command,
+    "SMEMBERS": smembers_command,
     "SPOP": spop_command,
     
 

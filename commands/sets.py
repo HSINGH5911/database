@@ -10,6 +10,27 @@ def srem_command(db, args):
 
     return db.srem(key, *members)
 
+def sismember_command(db, args):
+    key = args[0]
+    member = args[1]
+
+    return db.sismember(key, member)
+
+def smismember_command(db, args):
+    key = args[0]
+    members = args[1:]
+
+    return db.smismember(key, members)
+
+def scard_command(db, args):
+    key = args[0]
+
+    return db.scard(key)
+
+def smembers_command(db, args):
+    key = args[0]
+
+    return db.smembers(key)
 def spop_command(db, args):
     key = args[0]
 
