@@ -421,151 +421,231 @@ class Database:
     SET COMMANDS
     """
     def sadd(self, key, *members):
-        if key not in self.data:
+        if key in self.data:
+            if not isinstance(self.data[key], set):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
             self.data[key] = set()
         
+        added = 0
         for member in members:
-            self.data[key].add(member)
+            if member not in self.data[key]:
+                self.data[key].add(member)
+                added += 1
 
-        return str(len(members))
+        return added
     
     def srem(self, key, *members):
         if key not in self.data:
-            return -1
+            return 0
+        if not isinstance(self.data[key], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
+        removed = 0
         for member in members:
-            self.data[key].remove(member)
+            if member in self.data[key]:
+                self.data[key].remove(member)
+                removed += 1
 
-        return str(len(members))
+        if not self.data[key]:
+            del self.data[key]
+
+        return removed
 
     def sismember(self, key, member):
         if key not in self.data:
             return 0
+        if not isinstance(self.data[key], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
 
-        if self.data[key].contains(member):
-            return 1
-        
-        return 0
+        return 1 if member in self.data[key] else 0
     
     def smismember(self, key, members):
-        for member in members:
-            if self.sismember(key, member) == 0:
-                return 0
+        if key in self.data and not isinstance(self.data[key], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
-        return 1  
+        results = []
+        for member in members:
+            results.append(self.sismember(key, member))
+        return results
 
     def scard(self, key):
         if key not in self.data:
-            return -1
+            return 0
+        if not isinstance(self.data[key], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         return len(self.data[key])
     
     def smembers(self, key):
         if key not in self.data:
-            return "ERR - Key does not exist"
-        
+            return set()
+        if not isinstance(self.data[key], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         return self.data[key]
     
-
-    def spop(self, key, count=1):
+    def spop(self, key, count=None):
         if key not in self.data:
-            return "ERR - Key not in data"
+            return None
+        if not isinstance(self.data[key], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
-        removed = set()
+        if not self.data[key]:
+            return None
+            
+        if count is None:
+            elem = random.choice(list(self.data[key]))
+            self.data[key].remove(elem)
+            if not self.data[key]:
+                del self.data[key]
+            return elem
+            
+        popped = []
+        limit = min(count, len(self.data[key]))
+        for _ in range(limit):
+            elem = random.choice(list(self.data[key]))
+            self.data[key].remove(elem)
+            popped.append(elem)
+            
+        if not self.data[key]:
+            del self.data[key]
+            
+        return popped
 
-        for i in range(count):
-            rem = self.data[key].pop(random.choice(self.data[key]))
-            removed.add(rem)
-
-        return rem
-
-    def srandommember(self, key, count=1):
+    def srandommember(self, key, count=None):
         if key not in self.data:
-            return "ERR - Key not in data"
+            return None
+        if not isinstance(self.data[key], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
         
-        members = set()
-
-        for i in range(count):
-            mem = self.data[key].get(random.choice)
-            members.add(mem)
+        if not self.data[key]:
+            return None
+            
+        elements = list(self.data[key])
         
-        return members
+        if count is None:
+            return random.choice(elements)
+            
+        if count >= 0:
+            limit = min(count, len(elements))
+            return random.sample(elements, limit)
+        else:
+            limit = abs(count)
+            return [random.choice(elements) for _ in range(limit)]
     
     def smove(self, origin, destination, item):
-        if origin not in self.data or destination not in self.data:
-            return "(integer) 0"
+        if origin not in self.data:
+            return 0
+        if not isinstance(self.data[origin], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        if destination in self.data and not isinstance(self.data[destination], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+            
+        if item not in self.data[origin]:
+            return 0
+            
+        self.data[origin].remove(item)
+        if not self.data[origin]:
+            del self.data[origin]
+            
+        if destination not in self.data:
+            self.data[destination] = set()
+        self.data[destination].add(item)
         
-        self.data[destination].add(self.data[origin].get(item))
-        return "(integer) 1" 
+        return 1
 
     def sinter(self, keys):
-        intersection = []
-        
-        #find biggest key
-        biggest = -1
-        longest = ""
+        if not keys:
+            return []
+            
         for key in keys:
-            curr = -1
-            
+            if key in self.data and not isinstance(self.data[key], set):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+                
+        for key in keys:
             if key not in self.data:
-                curr = 0
-            curr = len(self.data[key])
+                return []
+                
+        result = set(self.data[keys[0]])
+        for key in keys[1:]:
+            result = result.intersection(self.data[key])
             
-            if curr > biggest:
-                biggest = curr
-                longest = key
-        
-        for member in self.data[longest]:
-            for key in keys:
-                if key == longest:
-                    continue
-                if key not in self.data:
-                    return []
-                if self.data[key].contains(member):
-                    intersection.append(member)
-        
-        return intersection
+        return list(result)
 
     def sinterstore(self, dest, keys):
-        intersection = self.sinter(keys)
-
-        self.data[dest] = intersection
-
+        if dest in self.data and not isinstance(self.data[dest], set):
+            del self.data[dest]
+            
+        res = self.sinter(keys)
+        if isinstance(res, str) and res.startswith("WRONGTYPE"):
+            return res
+            
+        if not res:
+            if dest in self.data:
+                del self.data[dest]
+            return 0
+            
+        self.data[dest] = set(res)
         return len(self.data[dest])
     
     def sunion(self, keys):
-        union = []
-
+        if not keys:
+            return []
+            
         for key in keys:
-            for member in self.data[key]:
-                if member not in union:
-                    union.append(member)
-
-        return union
+            if key in self.data and not isinstance(self.data[key], set):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+                
+        result = set()
+        for key in keys:
+            if key in self.data:
+                result = result.union(self.data[key])
+                
+        return list(result)
     
-    def sunionsotre(self, dest, keys):
-        union = self.sunion(keys)
-
-        self.data[dest] = union
-
+    def sunionstore(self, dest, keys):
+        if dest in self.data:
+            del self.data[dest]
+            
+        res = self.sunion(keys)
+        if isinstance(res, str) and res.startswith("WRONGTYPE"):
+            return res
+            
+        if not res:
+            return 0
+            
+        self.data[dest] = set(res)
         return len(self.data[dest])
     
     def sdiff(self, first, rest):
+        if first in self.data and not isinstance(self.data[first], set):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        for key in rest:
+            if key in self.data and not isinstance(self.data[key], set):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+                
         if first not in self.data:
             return []
-        
-        first_mem = self.data[first]
-        diff = []
-
+            
+        result = set(self.data[first])
         for key in rest:
-            for member in self.data[key]:
-                if member in first_mem and member not in self.data[key]:
-                    diff.append(member)
-        
-        return diff
+            if key in self.data:
+                result = result.difference(self.data[key])
+                
+        return list(result)
     
     def sdiffstore(self, dest, keys):
-        diff = self.sdiff(keys[0], keys[1:])
-
-        self.data[dest] = diff
-        
+        if not keys:
+            return 0
+            
+        if dest in self.data:
+            del self.data[dest]
+            
+        res = self.sdiff(keys[0], keys[1:])
+        if isinstance(res, str) and res.startswith("WRONGTYPE"):
+            return res
+            
+        if not res:
+            return 0
+            
+        self.data[dest] = set(res)
         return len(self.data[dest])

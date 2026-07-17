@@ -50,7 +50,7 @@ COMMANDS = {
     "SMOVE": smove_command,
     "SINTER": sinter_command,
     "SINTERSTORE": sinterstore_command,
-    "SUINON": sunion_command,
+    "SUNION": sunion_command,
     "SUNIONSTORE": sunionstore_command,
     "SDIFF": sdiff_command,
     "SDIFFSTORE": sdiffstore_command,
