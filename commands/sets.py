@@ -58,3 +58,36 @@ def smove_command(db, args):
 
     return db.smove(origin, destination, item)
 
+def sinter_command(db, args):
+    keys = args[0:]
+
+    return db.sinter(keys)
+
+def sinterstore_command(db, args):
+    dest = args[0]
+    keys = args[1:]
+
+    return db.sinterstore(dest, keys)
+
+def sunion_command(db, args):
+    keys = args[0:]
+
+    return db.sunion(keys)
+
+def sunionstore_command(db, args):
+    dest = args[0]
+    keys = args[1:]
+
+    return db.sunionstore(dest, keys)
+
+def sdiff_command(db, args):
+    first_key = args[0]
+    rest = args[1:]
+
+    return db.sdiff(first_key, rest)
+
+def sdiffstore_command(db, args):
+    dest = args[0]
+    keys = args[1:]
+
+    return db.sdiffstore(dest, keys)

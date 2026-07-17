@@ -497,5 +497,75 @@ class Database:
         self.data[destination].add(self.data[origin].get(item))
         return "(integer) 1" 
 
+    def sinter(self, keys):
+        intersection = []
         
+        #find biggest key
+        biggest = -1
+        longest = ""
+        for key in keys:
+            curr = -1
+            
+            if key not in self.data:
+                curr = 0
+            curr = len(self.data[key])
+            
+            if curr > biggest:
+                biggest = curr
+                longest = key
+        
+        for member in self.data[longest]:
+            for key in keys:
+                if key == longest:
+                    continue
+                if key not in self.data:
+                    return []
+                if self.data[key].contains(member):
+                    intersection.append(member)
+        
+        return intersection
 
+    def sinterstore(self, dest, keys):
+        intersection = self.sinter(keys)
+
+        self.data[dest] = intersection
+
+        return len(self.data[dest])
+    
+    def sunion(self, keys):
+        union = []
+
+        for key in keys:
+            for member in self.data[key]:
+                if member not in union:
+                    union.append(member)
+
+        return union
+    
+    def sunionsotre(self, dest, keys):
+        union = self.sunion(keys)
+
+        self.data[dest] = union
+
+        return len(self.data[dest])
+    
+    def sdiff(self, first, rest):
+        if first not in self.data:
+            return []
+        
+        first_mem = self.data[first]
+        diff = []
+
+        for key in rest:
+            for member in self.data[key]:
+                if member in first_mem and member not in self.data[key]:
+                    diff.append(member)
+        
+        return diff
+    
+    def sdiffstore(self, dest, keys):
+        diff = self.sdiff(keys[0], keys[1:])
+
+        self.data[dest] = diff
+        
+        return len(self.data[dest])

@@ -7,7 +7,7 @@ Redis-Like Database Project Roadmap
 - [x] Advanced String commands: `EXISTS`, `INCR`, `DECR`, `APPEND` (`commands/string.py`)
 - [x] Hash commands (Placeholder in `commands/hashes.py`)
 - [x] List commands (Placeholder in `commands/lists.py`)
-- [ ] Set commands (Placeholder in `commands/sets.py`)
+- [x] Set commands (Placeholder in `commands/sets.py`)
 - [ ] Sorted Set commands (Placeholder in `commands/sorted_sets.py`)
 - [ ] Pub/Sub commands (Placeholder in `commands/pubsub.py`)
 - [ ] Administrative commands (Placeholder in `commands/admin.py`)
