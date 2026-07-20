@@ -3,6 +3,8 @@ from commands.hashes import *
 from commands.lists import *
 from commands.sets import *
 from commands.sorted_sets import *
+from commands.pubsub import *
+from commands.admin import *
 
 COMMANDS = {
     # STRING COMMANDS
@@ -70,6 +72,23 @@ COMMANDS = {
     "ZREVRANK": zrevrank_command,
     "ZPOPMIN": zpopmin_command,
     "ZPOPMAX": zpopmax_command,
+
+    # PUBSUB COMMANDS
+    "SUBSCRIBE": subscribe_command,
+    "UNSUBSCRIBE": unsubscribe_command,
+    "PUBLISH": publish_command,
+
+    # ADMIN COMMANDS
+    "DBSIZE": dbsize_command,
+    "KEYS": keys_command,
+    "TYPE": type_command,
+    "RENAME": rename_command,
+    "RENAMENX": renamenx_command,
+    "RANDOMKEY": randomkey_command,
+    "INFO": info_command,
+    "TIME": time_command,
+    "FLUSHALL": flushall_command,
+    "FLUSHDB": flushdb_command,
 }
 
 def execute(command, db, args):

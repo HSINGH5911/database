@@ -1,4 +1,6 @@
 import random
+import fnmatch
+import time
 
 class SortedSet:
     def __init__(self):
@@ -71,6 +73,8 @@ class Database:
 
     def __init__(self):
         self.data = {}
+        self.channels = {}
+        self.start_time = time.time()
 
     """
     STRING COMMANDS
@@ -938,3 +942,121 @@ class Database:
             del self.data[key]
 
         return result
+    
+    """
+    PUBSUB COMMANDS
+    """
+    def subscribe(self, client_socket, *channel_names):
+        results = []
+        
+        for channel in channel_names:
+            if channel not in channel_names:
+                self.channels[channel] = set()
+        
+            self.channels[channel].add(client_socket)
+            sub_count = len([ch for ch, clients in self.channels.items() if client_socket in clients])
+            results.append(["subscribe", channel, sub_count])
+        
+        return results
+    
+    def unsubscribe(self, client_socket, *channel_names):
+        if not channel_names:
+            channel_names = [ch for ch, clients in self.channels.items() if client_socket in clients]
+        
+        results = []                                                                                                                                                                           
+        
+        for channel in channel_names:                                                                                                                                                          
+            if channel in self.channels and client_socket in self.channels[channel]:                                                                                                           
+                self.channels[channel].remove(client_socket)                                                                                                                                   
+                if not self.channels[channel]:                                                                                                                                                 
+                    del self.channels[channel]                                                                                                                                                 
+            
+            sub_count = len([ch for ch, clients in self.channels.items() if client_socket in clients])                                                                                         
+            results.append(["unsubscribe", channel, sub_count])                                                                                                                                
+        
+        return results  
+    
+    def publish(self, channel, message):                                                                                                                                                       
+        if channel not in self.channels:                                                                                                                                                       
+            return 0                                                                                                                                                                           
+                                                                                                                                                                                                
+        subscribers = list(self.channels[channel])                                                                                                                                             
+        received_count = 0                                                                                                                                                                     
+                                                                                                                                                                                                
+        # Format pubsub message payload                                                                                                                                                        
+        payload = f"1) \"message\"\n2) \"{channel}\"\n3) \"{message}\"\n\n".encode()                                                                                                           
+                                                                                                                                                                                                
+        for client_socket in subscribers:                                                                                                                                                      
+            try:                                                                                                                                                                               
+                client_socket.send(payload)                                                                                                                                                    
+                received_count += 1                                                                                                                                                            
+            except Exception:                                                                                                                                                                  
+                # Remove stale/closed socket connections                                                                                                                                       
+                self.channels[channel].discard(client_socket)                                                                                                                                  
+                                                                                                                                                                                                
+        return received_count
+
+    """
+    ADMINISTRATIVE COMMANDS
+    """
+    def dbsize(self):
+        return len(self.data)
+
+    def keys(self, pattern="*"):
+        matching = []
+        for key in self.data.keys():
+            if fnmatch.fnmatch(key, pattern):
+                matching.append(key)
+        return matching
+
+    def type(self, key):
+        if key not in self.data:
+            return "none"
+        val = self.data[key]
+        if isinstance(val, SortedSet):
+            return "zset"
+        elif isinstance(val, set):
+            return "set"
+        elif isinstance(val, list):
+            return "list"
+        elif isinstance(val, dict):
+            return "hash"
+        elif isinstance(val, str):
+            return "string"
+        return "unknown"
+
+    def rename(self, key, newkey):
+        if key not in self.data:
+            return False
+        self.data[newkey] = self.data.pop(key)
+        return True
+
+    def renamenx(self, key, newkey):
+        if key not in self.data:
+            return "ERR no such key"
+        if newkey in self.data:
+            return 0
+        self.data[newkey] = self.data.pop(key)
+        return 1
+
+    def randomkey(self):
+        if not self.data:
+            return None
+        return random.choice(list(self.data.keys()))
+
+    def info(self):
+        uptime_sec = int(time.time() - self.start_time)
+        info_lines = [
+            "# Server",
+            "redis_version:7.0.0-like",
+            f"uptime_in_seconds:{uptime_sec}",
+            "# Keyspace",
+            f"db0:keys={len(self.data)},expires=0,avg_ttl=0"
+        ]
+        return "\n".join(info_lines)
+
+    def time(self):
+        now = time.time()
+        seconds = int(now)
+        microseconds = int((now - seconds) * 1000000)
+        return [str(seconds), str(microseconds)]     
