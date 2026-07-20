@@ -10,13 +10,13 @@ Redis-Like Database Project Roadmap
 - [x] Set commands (Placeholder in `commands/sets.py`)
 - [x] Sorted Set commands (Placeholder in `commands/sorted_sets.py`)
 - [x] Pub/Sub commands (Placeholder in `commands/pubsub.py`)
-- [ ] Administrative commands (Placeholder in `commands/admin.py`)
+- [x] Administrative commands (Placeholder in `commands/admin.py`)
 
 2. Network Protocol & Serialization (RESP-like)
 - [x] Basic line-based command parser (`protocol/parser.py`)
 - [x] RESP serialization formats: Simple Strings, Integers, Bulk Strings, Errors (`protocol/serializer.py`)
 - [x] Protocol wrapper interface (`protocol/protocol.py`)
-- [ ] Fully compliant RESP parsing (handling nested arrays, multi-line bulk strings correctly)
+- [x] Fully compliant RESP parsing (handling nested arrays, multi-line bulk strings correctly)
 
 3. Networking & Client-Server Architecture
 - [x] TCP Socket Server for command handling (`networking/socket_server.py`)
