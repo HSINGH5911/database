@@ -1,5 +1,72 @@
 import random
 
+class SortedSet:
+    def __init__(self):
+        self.mapping = {}
+
+    def add(self, member, score):
+        is_new = member not in self.mapping
+        self.mapping[member] = float(score)
+        return is_new
+
+    def remove(self, member):
+        if member in self.mapping:
+            del self.mapping[member]
+            return True
+        return False
+
+    def get_score(self, member):
+        return self.mapping.get(member)
+
+    def __len__(self):
+        return len(self.mapping)
+
+    def __bool__(self):
+        return bool(self.mapping)
+
+    def get_sorted(self, reverse=False):
+        if not reverse:
+            return sorted(self.mapping.items(), key=lambda item: (item[1], item[0]))
+        else:
+            return sorted(self.mapping.items(), key=lambda item: (item[1], item[0]), reverse=True)
+
+
+def parse_score_bound(val_str):
+    val_str = str(val_str).strip()
+    exclusive = False
+    if val_str.startswith("("):
+        exclusive = True
+        val_str = val_str[1:]
+    
+    val_lower = val_str.lower()
+    if val_lower in ("-inf", "-infinity"):
+        val = float("-inf")
+    elif val_lower in ("+inf", "+infinity", "inf", "infinity"):
+        val = float("inf")
+    else:
+        val = float(val_str)
+        
+    return val, exclusive
+
+
+def score_in_range(s, min_val, min_ex, max_val, max_ex):
+    if min_ex:
+        if s <= min_val:
+            return False
+    else:
+        if s < min_val:
+            return False
+            
+    if max_ex:
+        if s >= max_val:
+            return False
+    else:
+        if s > max_val:
+            return False
+            
+    return True
+
+
 class Database:
 
     def __init__(self):
@@ -649,3 +716,225 @@ class Database:
             
         self.data[dest] = set(res)
         return len(self.data[dest])
+
+    """
+    SORTED SET COMMANDS
+    """
+    def zadd(self, key, pairs):
+        if key in self.data:
+            if not isinstance(self.data[key], SortedSet):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
+            self.data[key] = SortedSet()
+
+        added = 0
+        for score_str, member in pairs:
+            try:
+                score = float(score_str)
+            except ValueError:
+                return "ERR - value is not a valid float"
+            if self.data[key].add(member, score):
+                added += 1
+
+        return added
+
+    def zrem(self, key, *members):
+        if key not in self.data:
+            return 0
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        removed = 0
+        for member in members:
+            if self.data[key].remove(member):
+                removed += 1
+
+        if not self.data[key]:
+            del self.data[key]
+
+        return removed
+
+    def zscore(self, key, member):
+        if key not in self.data:
+            return None
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        score = self.data[key].get_score(member)
+        if score is None:
+            return None
+        return str(int(score)) if score.is_integer() else str(score)
+
+    def zincrby(self, key, increment, member):
+        try:
+            incr_val = float(increment)
+        except ValueError:
+            return "ERR - value is not a valid float"
+
+        if key in self.data:
+            if not isinstance(self.data[key], SortedSet):
+                return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        else:
+            self.data[key] = SortedSet()
+
+        curr_score = self.data[key].get_score(member)
+        if curr_score is None:
+            curr_score = 0.0
+
+        new_score = curr_score + incr_val
+        self.data[key].add(member, new_score)
+
+        return str(int(new_score)) if new_score.is_integer() else str(new_score)
+
+    def zcard(self, key):
+        if key not in self.data:
+            return 0
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+        return len(self.data[key])
+
+    def zcount(self, key, min_str, max_str):
+        try:
+            min_val, min_ex = parse_score_bound(min_str)
+            max_val, max_ex = parse_score_bound(max_str)
+        except ValueError:
+            return "ERR - min or max is not a float"
+
+        if key not in self.data:
+            return 0
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        count = 0
+        for member, score in self.data[key].mapping.items():
+            if score_in_range(score, min_val, min_ex, max_val, max_ex):
+                count += 1
+        return count
+
+    def zrange(self, key, start, stop, withscores=False, reverse=False):
+        try:
+            start_idx = int(start)
+            stop_idx = int(stop)
+        except ValueError:
+            return "ERR - value is not an integer or out of range"
+
+        if key not in self.data:
+            return []
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        items = self.data[key].get_sorted(reverse=reverse)
+        n = len(items)
+        if start_idx < 0:
+            start_idx = max(0, n + start_idx)
+        if stop_idx < 0:
+            stop_idx = n + stop_idx
+
+        if start_idx >= n or start_idx > stop_idx:
+            return []
+
+        stop_idx = min(stop_idx, n - 1)
+        sub = items[start_idx:stop_idx + 1]
+
+        result = []
+        for m, s in sub:
+            result.append(m)
+            if withscores:
+                score_str = str(int(s)) if s.is_integer() else str(s)
+                result.append(score_str)
+
+        return result
+
+    def zrevrange(self, key, start, stop, withscores=False):
+        return self.zrange(key, start, stop, withscores=withscores, reverse=True)
+
+    def zrangebyscore(self, key, min_str, max_str, withscores=False, offset=None, count=None):
+        try:
+            min_val, min_ex = parse_score_bound(min_str)
+            max_val, max_ex = parse_score_bound(max_str)
+        except ValueError:
+            return "ERR - min or max is not a float"
+
+        if key not in self.data:
+            return []
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        items = self.data[key].get_sorted(reverse=False)
+        filtered = [
+            (m, s) for m, s in items
+            if score_in_range(s, min_val, min_ex, max_val, max_ex)
+        ]
+
+        if offset is not None and count is not None:
+            filtered = filtered[offset:offset + count]
+
+        result = []
+        for m, s in filtered:
+            result.append(m)
+            if withscores:
+                score_str = str(int(s)) if s.is_integer() else str(s)
+                result.append(score_str)
+
+        return result
+
+    def zrank(self, key, member, reverse=False):
+        if key not in self.data:
+            return None
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        items = self.data[key].get_sorted(reverse=reverse)
+        for rank, (m, s) in enumerate(items):
+            if m == member:
+                return rank
+        return None
+
+    def zrevrank(self, key, member):
+        return self.zrank(key, member, reverse=True)
+
+    def zpopmin(self, key, count=1):
+        if key not in self.data:
+            return []
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        if not self.data[key]:
+            return []
+
+        items = self.data[key].get_sorted(reverse=False)
+        to_pop = items[:count]
+
+        result = []
+        for m, s in to_pop:
+            self.data[key].remove(m)
+            score_str = str(int(s)) if s.is_integer() else str(s)
+            result.extend([m, score_str])
+
+        if not self.data[key]:
+            del self.data[key]
+
+        return result
+
+    def zpopmax(self, key, count=1):
+        if key not in self.data:
+            return []
+        if not isinstance(self.data[key], SortedSet):
+            return "WRONGTYPE Operation against a key holding the wrong kind of value"
+
+        if not self.data[key]:
+            return []
+
+        items = self.data[key].get_sorted(reverse=True)
+        to_pop = items[:count]
+
+        result = []
+        for m, s in to_pop:
+            self.data[key].remove(m)
+            score_str = str(int(s)) if s.is_integer() else str(s)
+            result.extend([m, score_str])
+
+        if not self.data[key]:
+            del self.data[key]
+
+        return result

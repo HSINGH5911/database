@@ -2,6 +2,7 @@ from commands.string import *
 from commands.hashes import *
 from commands.lists import *
 from commands.sets import *
+from commands.sorted_sets import *
 
 COMMANDS = {
     # STRING COMMANDS
@@ -54,7 +55,21 @@ COMMANDS = {
     "SUNIONSTORE": sunionstore_command,
     "SDIFF": sdiff_command,
     "SDIFFSTORE": sdiffstore_command,
-    
+
+    # SORTED SET COMMANDS
+    "ZADD": zadd_command,
+    "ZREM": zrem_command,
+    "ZSCORE": zscore_command,
+    "ZINCRBY": zincrby_command,
+    "ZCARD": zcard_command,
+    "ZCOUNT": zcount_command,
+    "ZRANGE": zrange_command,
+    "ZREVRANGE": zrevrange_command,
+    "ZRANGEBYSCORE": zrangebyscore_command,
+    "ZRANK": zrank_command,
+    "ZREVRANK": zrevrank_command,
+    "ZPOPMIN": zpopmin_command,
+    "ZPOPMAX": zpopmax_command,
 }
 
 def execute(command, db, args):
