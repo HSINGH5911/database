@@ -91,11 +91,14 @@ COMMANDS = {
     "FLUSHDB": flushdb_command,
 }
 
-def execute(command, db, args):
+def execute(command, db, args, client_socket=None):
     command = command.upper()
 
     if command not in COMMANDS:
-        raise Exception("Unknown command")
+        raise Exception(f"Unknown command: {command}")
+
+    if command in ("SUBSCRIBE", "UNSUBSCRIBE"):
+        return COMMANDS[command](db, client_socket, args)
     
     return COMMANDS[command](db, args)
 

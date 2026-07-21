@@ -23,8 +23,8 @@ Redis-Like Database Project Roadmap
 - [x] Interactive CLI client terminal (`client.py`)
 - [x] Basic single-command client script (`networking/socket_client.py`)
 - [x] Interactive offline REPL CLI (`server.py`)
-- [ ] Connection manager and connection state pooling (`core/connection.py`)
-- [ ] Multi-threaded/Asynchronous connection handling (non-blocking socket support)
+- [x] Connection manager and connection state pooling (`core/connection.py`)
+- [x] Multi-threaded/Asynchronous connection handling (non-blocking socket support)
 
 4. Persistence & Storage Engine
 - [ ] Append-Only File (AOF) logging for write-ahead durability (Placeholder in `persistence/aof.py`)
