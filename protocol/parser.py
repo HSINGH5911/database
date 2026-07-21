@@ -24,7 +24,7 @@ class Parser:
         return data.split()
 
     def _parse_resp_array(self, data):
-        lines = data.split("\r\n")
+        lines = data.replace("\r\n", "\n").split("\n")
         if not lines or not lines[0].startswith("*"):
             return data.split()
 
@@ -54,7 +54,7 @@ class Parser:
         return tokens
 
     def _parse_bulk_string(self, data):
-        lines = data.split("\r\n")
+        lines = data.replace("\r\n", "\n").split("\n")
         if len(lines) >= 2:
             return lines[1]
         return data.lstrip("$")

@@ -27,9 +27,9 @@ Redis-Like Database Project Roadmap
 - [x] Multi-threaded/Asynchronous connection handling (non-blocking socket support)
 
 4. Persistence & Storage Engine
-- [ ] Append-Only File (AOF) logging for write-ahead durability (Placeholder in `persistence/aof.py`)
+- [x] Append-Only File (AOF) logging for write-ahead durability (Placeholder in `persistence/aof.py`)
 - [ ] RDB snapshotting for database state backups (Placeholder in `persistence/snapshot.py`)
-- [ ] Startup data loading & reconstruction (Placeholder in `persistence/loader.py`)
+- [x] Startup data loading & reconstruction (Placeholder in `persistence/loader.py`)
 - [ ] Custom memory storage backend block/page allocation (Placeholder in `core/storage.py`)
 
 5. Testing, Utilities, & Error Handling
