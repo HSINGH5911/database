@@ -33,6 +33,6 @@ Redis-Like Database Project Roadmap
 - [x] Custom memory storage backend block/page allocation (Placeholder in `core/storage.py`)
 
 5. Testing, Utilities, & Error Handling
-- [ ] Robust error handling definitions (`core/errors.py`)
-- [ ] Comprehensive unit & integration tests (`tests/` directory)
-- [ ] Helper utilities & logging functions (`utils/` directory)
+- [x] Robust error handling definitions (`core/errors.py`)
+- [x] Comprehensive unit & integration tests (`tests/` directory)
+- [x] Helper utilities & logging functions (`utils/` directory)
