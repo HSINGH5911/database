@@ -1,6 +1,6 @@
 {
   "magic": "REDIS0001",
-  "created_at": 1784777512.967754,
+  "created_at": 1784777719.206737,
   "keys_count": 1,
   "keys": {
     "cmd_key": {
