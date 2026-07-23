@@ -1,0 +1,11 @@
+{
+  "magic": "REDIS0001",
+  "created_at": 1784777512.967754,
+  "keys_count": 1,
+  "keys": {
+    "cmd_key": {
+      "type": "string",
+      "value": "cmd_val"
+    }
+  }
+}

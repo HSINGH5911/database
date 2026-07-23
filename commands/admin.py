@@ -75,3 +75,26 @@ def flushall_command(db, args):
 def flushdb_command(db, args):
     db.flush()
     return "OK"
+
+def save_command(db, args):
+    if len(args) != 0:
+        return "ERR - wrong number of args"
+    from persistence.snapshot import RDBSnapshot
+    rdb = RDBSnapshot()
+    rdb.save(db)
+    return "OK"
+
+def bgsave_command(db, args):
+    if len(args) != 0:
+        return "ERR - wrong number of args"
+    from persistence.snapshot import RDBSnapshot
+    rdb = RDBSnapshot()
+    return rdb.bgsave(db)
+
+def lastsave_command(db, args):
+    if len(args) != 0:
+        return "ERR - wrong number of args"
+    from persistence.snapshot import RDBSnapshot
+    last_save = RDBSnapshot.get_last_save_time()
+    return f"(integer) {last_save}"
+

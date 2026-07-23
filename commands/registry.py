@@ -89,6 +89,9 @@ COMMANDS = {
     "TIME": time_command,
     "FLUSHALL": flushall_command,
     "FLUSHDB": flushdb_command,
+    "SAVE": save_command,
+    "BGSAVE": bgsave_command,
+    "LASTSAVE": lastsave_command,
 }
 
 def execute(command, db, args, client_socket=None):

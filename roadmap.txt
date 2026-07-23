@@ -28,7 +28,7 @@ Redis-Like Database Project Roadmap
 
 4. Persistence & Storage Engine
 - [x] Append-Only File (AOF) logging for write-ahead durability (Placeholder in `persistence/aof.py`)
-- [ ] RDB snapshotting for database state backups (Placeholder in `persistence/snapshot.py`)
+- [x] RDB snapshotting for database state backups (`persistence/snapshot.py`)
 - [x] Startup data loading & reconstruction (Placeholder in `persistence/loader.py`)
 - [x] Custom memory storage backend block/page allocation (Placeholder in `core/storage.py`)
 
